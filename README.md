@@ -39,6 +39,8 @@ Turn on **Lyrics on Discord** in the popup's Settings tab. While a song plays, t
 - Discord limits how fast activities can update, so lines are sent at most every few seconds.
 - LRCLIB's documentation does not state a data license. Check [lrclib.net](https://lrclib.net) for current terms before redistributing anything.
 
+Privacy: see [PRIVACY.md](PRIVACY.md).
+
 ## Requirements
 
 - Windows, Node.js 22+

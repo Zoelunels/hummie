@@ -23,6 +23,8 @@ function floatWindow(): void {
     .then(() => window.close()) // close the toolbar popup once the window is up
 }
 
+const RELEASES_URL = 'https://github.com/Zoelunels/hummie/releases/latest'
+
 const SEGMENTS = 24
 const TAGLINE: Record<Mode, string> = {
   playing: 'humming along',
@@ -99,12 +101,17 @@ function Wordmark({ text, tag, small }: { text: string; tag: string; small?: boo
 
 /** Shown whenever the popup can't show the player: no helper, not paired, waiting, denied. */
 function ConnectScreen({ link, onPair }: { link: Link; onPair: () => void }) {
-  const copy: Record<Link, { tag: string; title: string; body: string; cta?: string }> = {
+  const copy: Record<
+    Link,
+    { tag: string; title: string; body: string; cta?: string; href?: string; hrefLabel?: string }
+  > = {
     connecting: { tag: 'one sec', title: 'connecting', body: 'Reaching the Hummie helper…' },
     'no-helper': {
       tag: 'no signal',
       title: 'helper not running',
-      body: 'Start Hummie from the Start menu. It runs in the system tray and does the Discord part. This popup keeps trying on its own.'
+      body: 'Start Hummie from the Start menu. It runs in the system tray and does the Discord part. Not installed yet? Download it below. This popup keeps trying on its own.',
+      href: RELEASES_URL,
+      hrefLabel: 'Download Hummie helper'
     },
     unpaired: {
       tag: 'hello',
@@ -141,6 +148,11 @@ function ConnectScreen({ link, onPair }: { link: Link; onPair: () => void }) {
           <button className="bx cta" onClick={onPair}>
             {c.cta}
           </button>
+        )}
+        {c.href && (
+          <a className="bx cta link" href={c.href} target="_blank" rel="noreferrer">
+            {c.hrefLabel}
+          </a>
         )}
       </section>
     </>
