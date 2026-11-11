@@ -7,6 +7,7 @@ import type { FromBackground, ToBackground } from '../src/messages'
 // Runs the REAL background.ts (with a mocked chrome.* API) against the REAL Bridge, including the
 // pairing flow, so the extension and helper protocols are exercised together.
 const store: Record<string, unknown> = {}
+const tabMessages: { tab: number; msg: unknown }[] = []
 let onMessage: (m: unknown, sender: unknown) => void
 let onRemoved: (id: number) => void
 let onConnect: (port: unknown) => void
@@ -23,7 +24,10 @@ vi.stubGlobal('chrome', {
   },
   action: { setBadgeText: async () => {}, setBadgeBackgroundColor: async () => {} },
   alarms: { create: () => {}, onAlarm: noEvent },
-  tabs: { onRemoved: { addListener: (f: typeof onRemoved) => (onRemoved = f) } },
+  tabs: {
+    onRemoved: { addListener: (f: typeof onRemoved) => (onRemoved = f) },
+    sendMessage: async (tab: number, msg: unknown) => void tabMessages.push({ tab, msg })
+  },
   runtime: {
     onMessage: { addListener: (f: typeof onMessage) => (onMessage = f) },
     onConnect: { addListener: (f: typeof onConnect) => (onConnect = f) },
@@ -112,6 +116,20 @@ describe('extension <-> helper', () => {
     onRemoved(1)
     await until(() => got.length === 3)
     expect(got[2].state).toBe('stopped')
+  })
+
+  it('player controls from the popup reach the YouTube Music tab; unknown commands do not', async () => {
+    play(7, { state: 'playing', title: 'C', artist: 'Z' })
+    const popup = openPopup()
+    tabMessages.length = 0
+    popup.send({ action: 'control', command: 'next' })
+    popup.send({ action: 'control', command: 'toggle' })
+    popup.send({ action: 'control', command: 'format-disk' as never })
+    await until(() => tabMessages.length >= 2)
+    expect(tabMessages).toEqual([
+      { tab: 7, msg: { type: 'hummie:control', command: 'next' } },
+      { tab: 7, msg: { type: 'hummie:control', command: 'toggle' } }
+    ])
   })
 
   it('popup settings changes reach the helper and come back as new state', async () => {

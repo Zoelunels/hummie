@@ -15,6 +15,7 @@ let link: Link = 'connecting'
 let appState: AppState | null = null
 let lastMsg: PlaybackMessage = { type: 'playback', state: 'stopped' }
 let activeTab: number | undefined
+let lastTab: number | undefined // most recent YouTube Music tab we heard from, for player controls
 const ports = new Set<chrome.runtime.Port>()
 
 function view(): FromBackground {
@@ -124,6 +125,7 @@ chrome.runtime.onMessage.addListener((m, sender) => {
   if (m?.type !== 'hummie:playback') return
   const msg = m.msg as PlaybackMessage
   const tabId = sender.tab?.id
+  if (tabId !== undefined) lastTab = tabId
   if (msg.state === 'playing') activeTab = tabId
   else if (tabId !== activeTab && activeTab !== undefined) return // another tab owns playback
   sendPlayback(msg)
@@ -148,6 +150,13 @@ chrome.runtime.onConnect.addListener((port) => {
       case 'regenerate-token':
         sendToHelper({ type: 'regenerate-token' })
         break
+      case 'control': {
+        // Only known commands, only to a tab that has told us it is YouTube Music.
+        const tab = activeTab ?? lastTab
+        if (tab !== undefined && ['toggle', 'next', 'previous'].includes(m.command))
+          chrome.tabs.sendMessage(tab, { type: 'hummie:control', command: m.command }).catch(() => {})
+        break
+      }
     }
   })
   port.postMessage(view())

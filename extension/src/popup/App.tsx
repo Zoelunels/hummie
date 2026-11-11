@@ -6,7 +6,7 @@ import {
   type LyricsStatus,
   type Settings
 } from '../../../desktop/src/shared/app'
-import type { Link } from '../messages'
+import type { Command, Link } from '../messages'
 import { currentPosition, formatTime, fraction } from './progress'
 import { useHelper, type Helper } from './useHelper'
 
@@ -67,7 +67,7 @@ export function App() {
       <main className="page">
         {link === 'connected' && state ? (
           view === 'player' ? (
-            <Player state={state} />
+            <Player state={state} onControl={helper.control} />
           ) : (
             <SettingsView helper={helper} state={state} />
           )
@@ -147,7 +147,7 @@ function ConnectScreen({ link, onPair }: { link: Link; onPair: () => void }) {
   )
 }
 
-function Player({ state }: { state: AppState }) {
+function Player({ state, onControl }: { state: AppState; onControl: (c: Command) => void }) {
   const m = state.playback
   const mode: Mode = !m ? 'idle' : m.state === 'playing' ? 'playing' : 'paused'
   const now = useNow(mode === 'playing')
@@ -187,6 +187,22 @@ function Player({ state }: { state: AppState }) {
         <div className="times">
           <span>{m ? formatTime(pos) : '00:00'}</span>
           <span>{m ? formatTime(m.durationSec) : '--:--'}</span>
+        </div>
+        <div className="controls" role="group" aria-label="Player controls">
+          <button className="bx" aria-label="Previous song" disabled={!m} onClick={() => onControl('previous')}>
+            ◀◀
+          </button>
+          <button
+            className="bx play"
+            aria-label={mode === 'playing' ? 'Pause' : 'Play'}
+            disabled={!m}
+            onClick={() => onControl('toggle')}
+          >
+            {mode === 'playing' ? '❚❚' : '▶'}
+          </button>
+          <button className="bx" aria-label="Next song" disabled={!m} onClick={() => onControl('next')}>
+            ▶▶
+          </button>
         </div>
       </section>
 

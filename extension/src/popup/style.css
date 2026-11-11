@@ -107,6 +107,13 @@ html.windowed .app { height: 100vh; min-height: 0; max-height: none; }
 .bx.full { width: 100%; padding: 6px; }
 .bx.cta { width: 100%; padding: 10px; font-size: 14px; background: var(--acid); border-color: var(--acid); color: var(--black); }
 .bx.cta:hover { background: var(--ink); border-color: var(--ink); }
+.controls { display: flex; gap: 8px; margin-top: 10px; }
+.controls .bx { flex: 1; min-width: 0; padding: 5px 0; font-size: 13px; letter-spacing: 0; }
+.controls .bx.play { flex: 1.6; background: var(--acid); border-color: var(--acid); color: var(--black); }
+.controls .bx.play:hover { background: var(--ink); border-color: var(--ink); }
+.bx:disabled { opacity: .45; cursor: default; }
+.bx:disabled:hover { background: transparent; color: var(--ink); }
+.controls .bx.play:disabled:hover { background: var(--acid); color: var(--black); }
 .btns { display: flex; gap: 6px; flex-shrink: 0; }
 .val { min-width: 44px; text-align: center; font-weight: 700; }
 .hint { font-size: 10px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin: 0 0 4px; }

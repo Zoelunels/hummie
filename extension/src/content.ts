@@ -1,4 +1,4 @@
-import { buildSnapshot, isDrifted, parseTimeInfo, signature } from './snapshot'
+import { buildSnapshot, CONTROL_SELECTORS, isDrifted, parseTimeInfo, signature } from './snapshot'
 
 // Primary source: navigator.mediaSession (YouTube Music fills it). Fallback: player bar DOM.
 // NOTE: player-bar selectors are unverified against the live site; mediaSession is the main path.
@@ -18,6 +18,20 @@ function read() {
     url: location.href
   })
 }
+
+// Player controls from the popup. Play/pause drives the <video> directly (most reliable);
+// next/previous click the player bar's own buttons.
+chrome.runtime.onMessage.addListener((m) => {
+  if (m?.type !== 'hummie:control') return
+  if (m.command === 'toggle') {
+    const v = document.querySelector('video')
+    if (v?.paused) v.play().catch(() => {})
+    else v?.pause()
+  } else if (m.command === 'next' || m.command === 'previous') {
+    document.querySelector<HTMLElement>(CONTROL_SELECTORS[m.command as 'next' | 'previous'])?.click()
+  }
+  setTimeout(() => push(true), 300) // report the new state quickly
+})
 
 let last = ''
 let sentPos = 0

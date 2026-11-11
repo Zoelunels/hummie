@@ -61,6 +61,12 @@ export function splitArtist(
   return { artist: parts[0]?.slice(0, 256), album: album ?? fromText }
 }
 
+/** Player bar buttons for next/previous. NOTE: unverified against the live site. */
+export const CONTROL_SELECTORS = {
+  next: 'ytmusic-player-bar .next-button',
+  previous: 'ytmusic-player-bar .previous-button'
+} as const
+
 /** Identity of what the desktop app cares about; position excluded so ticks don't spam. */
 export function signature(m: PlaybackMessage): string {
   return [m.state, m.title, m.artist, m.album, m.durationSec ? Math.round(m.durationSec) : ''].join('|')

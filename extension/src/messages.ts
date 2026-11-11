@@ -9,9 +9,13 @@ export type Link =
   | 'connecting'
   | 'connected'
 
+/** Player controls the popup can trigger on the YouTube Music tab. */
+export type Command = 'toggle' | 'next' | 'previous'
+
 /** Popup -> background (over a long-lived port). */
 export type ToBackground =
   | { action: 'sync' }
+  | { action: 'control'; command: Command }
   | { action: 'pair' }
   | { action: 'set-settings'; patch: Partial<Settings> }
   | { action: 'regenerate-token' }

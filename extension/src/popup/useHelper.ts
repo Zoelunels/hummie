@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AppState, Settings } from '../../../desktop/src/shared/app'
-import type { FromBackground, Link, ToBackground } from '../messages'
+import type { Command, FromBackground, Link, ToBackground } from '../messages'
 
 export interface Helper {
   link: Link
@@ -8,6 +8,7 @@ export interface Helper {
   pair(): void
   setSettings(patch: Partial<Settings>): void
   regenerateToken(): void
+  control(command: Command): void
 }
 
 /** Talks to the extension's background worker, which owns the connection to the Hummie helper. */
@@ -45,6 +46,7 @@ export function useHelper(): Helper {
     state: view.state,
     pair: () => post({ action: 'pair' }),
     setSettings: (patch) => post({ action: 'set-settings', patch }),
-    regenerateToken: () => post({ action: 'regenerate-token' })
+    regenerateToken: () => post({ action: 'regenerate-token' }),
+    control: (command) => post({ action: 'control', command })
   }
 }
