@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="512" height="512">
+  <title>Hummie</title>
+  <rect width="128" height="128" rx="28" fill="#d9693a"/>
+  <path d="M32 40 C32 8 96 8 96 40" fill="none" stroke="#33291f" stroke-width="7" stroke-linecap="round"/>
+  <rect x="20" y="36" width="88" height="60" rx="10" fill="#f6efdc" stroke="#33291f" stroke-width="5"/>
+  <rect x="35" y="51" width="58" height="24" rx="12" fill="#33291f"/>
+  <circle cx="52" cy="63" r="6.5" fill="#f6efdc"/>
+  <circle cx="76" cy="63" r="6.5" fill="#f6efdc"/>
+  <path d="M38 96 L46 83 H82 L90 96Z" fill="#33291f"/>
+  <rect x="22" y="30" width="13" height="24" rx="6.5" fill="#33291f"/>
+  <rect x="93" y="30" width="13" height="24" rx="6.5" fill="#33291f"/>
+</svg>
