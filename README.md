@@ -67,6 +67,15 @@ Turn on **Lyrics on Discord** in the popup's Settings tab. While a song plays, t
 4. Click the Hummie icon, then **Pair with Hummie**, and click **Allow** in the dialog that appears.
 5. Play a song on music.youtube.com.
 
+## Building the Windows installer
+
+```bash
+cd desktop
+npm run dist    # needs DISCORD_CLIENT_ID in desktop/.env; output: desktop/release/Hummie-Setup-<version>.exe
+```
+
+The installer bundles your Application ID (it is public, so that is fine) and installs per user, no admin rights needed. On first launch the installed helper adds itself to Windows startup; you can turn that off from the tray menu. The installer is **not code-signed**, so Windows SmartScreen will warn about an unknown publisher until it is signed or builds up reputation. To use your own Discord application with an installed copy, put a `.env` with `DISCORD_CLIENT_ID=...` in `%APPDATA%\Hummie`.
+
 ## Development
 
 ```bash

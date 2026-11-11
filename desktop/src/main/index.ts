@@ -34,10 +34,8 @@ function loadToken(): string {
   return t
 }
 
-/** Minimal .env reader (KEY=VALUE lines), looked up in the working directory. */
-function envValue(key: string): string | undefined {
-  if (process.env[key]) return process.env[key]
-  const file = join(process.cwd(), '.env')
+/** Minimal .env reader (KEY=VALUE lines). */
+function envFileValue(file: string, key: string): string | undefined {
   if (!existsSync(file)) return undefined
   for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/)
@@ -45,6 +43,30 @@ function envValue(key: string): string | undefined {
   }
   return undefined
 }
+
+/**
+ * Where the Discord Application ID comes from, first match wins: environment variable, a .env in the
+ * working directory (development), a .env in the app's data folder (lets an installed copy use your
+ * own Discord application), then the config.json bundled by the installer.
+ */
+function discordClientId(): string | undefined {
+  if (process.env.DISCORD_CLIENT_ID) return process.env.DISCORD_CLIENT_ID
+  const fromEnvFile =
+    envFileValue(join(process.cwd(), '.env'), 'DISCORD_CLIENT_ID') ??
+    envFileValue(join(app.getPath('userData'), '.env'), 'DISCORD_CLIENT_ID')
+  if (fromEnvFile) return fromEnvFile
+  try {
+    const bundled = join(process.resourcesPath, 'config.json')
+    if (existsSync(bundled)) return JSON.parse(readFileSync(bundled, 'utf8')).discordClientId
+  } catch {
+    // fall through: presence stays disabled and the tray says so
+  }
+  return undefined
+}
+
+/** Installed builds keep the tray icon next to the app; in development it is in build/. */
+const trayIconPath = () =>
+  app.isPackaged ? join(process.resourcesPath, 'icon.png') : join(__dirname, '../../build/icon.png')
 
 let tray: Tray | null = null
 
@@ -60,7 +82,7 @@ app.whenReady().then(async () => {
     settings: loadSettings(settingsFile())
   }
 
-  const clientId = envValue('DISCORD_CLIENT_ID')
+  const clientId = discordClientId()
   const presence =
     clientId && /^\d{15,25}$/.test(clientId)
       ? new Presence(() => createDiscordClient(clientId), log, Date.now, state.settings)
@@ -129,7 +151,7 @@ app.whenReady().then(async () => {
       publish()
     })
     presence.start()
-  } else log('DISCORD_CLIENT_ID missing or invalid in desktop/.env - Discord presence disabled')
+  } else log('Discord Application ID missing or invalid - Discord presence disabled')
   lyrics.setEnabled(lyricsWanted())
 
   bridge.on('clientCount', (n) => {
@@ -155,7 +177,7 @@ app.whenReady().then(async () => {
   log(`bridge listening on 127.0.0.1:${port}`)
 
   // ---- tray -------------------------------------------------------------------------------
-  tray = new Tray(nativeImage.createFromPath(join(__dirname, '../../build/icon.png')).resize({ width: 16, height: 16 }))
+  tray = new Tray(nativeImage.createFromPath(trayIconPath()).resize({ width: 16, height: 16 }))
   tray.setToolTip('Hummie')
 
   function updateTray(): void {
@@ -184,6 +206,15 @@ app.whenReady().then(async () => {
     )
   }
   updateTray()
+
+  // First run of an installed copy: start with Windows, so the helper is there when the browser
+  // wants it. It is a normal login item (see the tray menu) and can be turned off there.
+  const firstRunMarker = join(app.getPath('userData'), 'first-run-done')
+  if (app.isPackaged && !existsSync(firstRunMarker)) {
+    app.setLoginItemSettings({ openAtLogin: true })
+    writeFileSync(firstRunMarker, '1')
+    updateTray()
+  }
 
   app.on('before-quit', () => {
     lyrics.stop()
