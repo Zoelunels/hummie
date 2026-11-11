@@ -1,8 +1,7 @@
 import { parseLrc, type LrcLine } from './lrc'
 
-// LRCLIB asks clients to identify themselves (name, version, homepage). Add the project URL here
-// once the repository is public.
-export const USER_AGENT = 'Hummie/0.1.0 (unofficial open-source YouTube Music to Discord presence)'
+// LRCLIB asks clients to identify themselves with a name, version and homepage.
+export const USER_AGENT = 'Hummie/0.1.0 (https://github.com/Zoelunels/hummie)'
 
 export interface Track {
   title: string
