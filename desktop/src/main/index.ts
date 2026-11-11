@@ -79,6 +79,7 @@ app.whenReady().then(async () => {
     extension: false,
     discord: 'disabled',
     lyrics: 'off',
+    lyricLine: null,
     settings: loadSettings(settingsFile())
   }
 
@@ -96,7 +97,11 @@ app.whenReady().then(async () => {
   const lyrics = new LyricsController({
     lookup: (t) => lrclib.lookup(t),
     lead: () => state.settings.lyricsLeadSec,
-    onLine: (line) => presence?.setLyricLine(line),
+    onLine: (line) => {
+      presence?.setLyricLine(line)
+      state.lyricLine = line
+      publish()
+    },
     onStatus: (s) => {
       log(`lyrics: ${s}`)
       state.lyrics = s

@@ -9,6 +9,7 @@ const state: AppState = {
   extension: false,
   discord: 'connected',
   lyrics: 'off',
+  lyricLine: null,
   settings: DEFAULT_SETTINGS
 }
 

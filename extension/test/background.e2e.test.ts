@@ -63,7 +63,7 @@ const play = (tab: number, msg: Partial<PlaybackMessage>) =>
   onMessage({ type: 'hummie:playback', msg: { type: 'playback', ...msg } }, { tab: { id: tab } })
 
 beforeAll(async () => {
-  state = { playback: null, playbackAt: 0, extension: false, discord: 'connected', lyrics: 'off', settings: DEFAULT_SETTINGS }
+  state = { playback: null, playbackAt: 0, extension: false, discord: 'connected', lyrics: 'off', lyricLine: null, settings: DEFAULT_SETTINGS }
   bridge = new Bridge('first-token', 0, {
     getState: () => state,
     requestPairing: async () => allow,

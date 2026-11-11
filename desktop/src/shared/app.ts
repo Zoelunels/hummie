@@ -37,6 +37,8 @@ export interface AppState {
   extension: boolean
   discord: DiscordStatus
   lyrics: LyricsStatus
+  /** The lyric line being shown right now (null when none). Same line that goes to Discord. */
+  lyricLine: string | null
   settings: Settings
 }
 

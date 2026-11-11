@@ -178,6 +178,11 @@ function Player({ state, onControl }: { state: AppState; onControl: (c: Command)
             <p className="artist">{artist}</p>
           </div>
         </div>
+        {state.lyricLine && (
+          <p className="lyric" aria-live="off">
+            ♪ {state.lyricLine}
+          </p>
+        )}
         <div
           className="segs"
           role="progressbar"
