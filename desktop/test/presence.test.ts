@@ -221,3 +221,31 @@ describe('Presence lyric updates', () => {
     expect(clients[0].calls.at(-1)).toBe('clear')
   })
 })
+
+describe('song button', () => {
+  const on = { showArt: true, showProgress: true, hideDetails: false }
+  const withUrl = (url: string, o = {}) => playing({ url, ...o })
+  it('links to a clean watch URL, dropping playlist and time parameters', () => {
+    const a = toActivity(withUrl('https://music.youtube.com/watch?v=abc123XYZ_-&list=RDAMVM&t=55'), 0, on)!
+    expect(a.buttons).toEqual([
+      { label: 'Listen on YouTube Music', url: 'https://music.youtube.com/watch?v=abc123XYZ_-' }
+    ])
+  })
+  it('also shows while paused', () => {
+    const a = toActivity(withUrl('https://music.youtube.com/watch?v=abc123XYZ', { state: 'paused' }), 0, on)!
+    expect(a.buttons).toHaveLength(1)
+  })
+  it('is omitted for non-song pages, other hosts, bad ids, and hidden details', () => {
+    for (const u of [
+      'https://music.youtube.com/',
+      'https://evil.example/watch?v=abc123XYZ',
+      'http://music.youtube.com/watch?v=abc123XYZ',
+      'https://music.youtube.com/watch?v=a b',
+      'nonsense'
+    ])
+      expect(toActivity(withUrl(u), 0, on)!.buttons).toBeUndefined()
+    expect(toActivity(playing(), 0, on)!.buttons).toBeUndefined()
+    const hidden = toActivity(withUrl('https://music.youtube.com/watch?v=abc123XYZ'), 0, { ...on, hideDetails: true })!
+    expect(hidden.buttons).toBeUndefined()
+  })
+})

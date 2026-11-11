@@ -18,6 +18,7 @@ export interface Activity {
   endTimestamp?: number
   largeImageKey: string
   largeImageText?: string
+  buttons?: { label: string; url: string }[]
   instance: false
 }
 
@@ -33,6 +34,23 @@ const MIN_UPDATE_MS = 2000
 // Lyric lines change often; keep Discord updates sparser while lyrics are active (rate limits).
 const LYRIC_MIN_UPDATE_MS = 4000
 const RECONNECT_MS = 5000
+
+/**
+ * A clean link to the song. Rebuilt from the video id only, so playlist, time and tracking
+ * parameters from the page URL are never published on the profile.
+ */
+export function songLink(url?: string): string | undefined {
+  if (!url) return undefined
+  try {
+    const u = new URL(url)
+    const id = u.searchParams.get('v')
+    if (u.protocol !== 'https:' || u.hostname !== 'music.youtube.com' || !id || !/^[\w-]{6,20}$/.test(id))
+      return undefined
+    return `https://music.youtube.com/watch?v=${id}`
+  } catch {
+    return undefined
+  }
+}
 
 /** Discord requires details/state to be 2..128 chars. */
 const fit = (s: string) => {
@@ -56,16 +74,19 @@ export function toActivity(
     largeImageText: !hide && m.album ? fit(m.album) : undefined,
     instance: false
   } as const
+  // The link reveals the song, so it follows "hide title / artist".
+  const link = hide ? undefined : songLink(m.url)
+  const buttons = link ? [{ label: 'Listen on YouTube Music', url: link }] : undefined
   const artist = hide ? undefined : (m.artist ?? 'Unknown artist')
   if (paused) {
     // Discord has no pause state: omit timestamps so the progress bar disappears.
-    return { ...base, state: hide ? 'Paused' : fit(`Paused · ${artist}`) }
+    return { ...base, buttons, state: hide ? 'Paused' : fit(`Paused · ${artist}`) }
   }
   const state = opts.lyric && !hide ? fit(opts.lyric) : artist ? fit(artist) : undefined
-  if (!opts.showProgress) return { ...base, state }
+  if (!opts.showProgress) return { ...base, buttons, state }
   const startTimestamp = Math.round(now - (m.positionSec ?? 0) * 1000)
   const endTimestamp = m.durationSec ? Math.round(startTimestamp + m.durationSec * 1000) : undefined
-  return { ...base, state, startTimestamp, endTimestamp }
+  return { ...base, buttons, state, startTimestamp, endTimestamp }
 }
 
 /** True if b is meaningfully different from a (ignores sub-tolerance timestamp jitter). */
@@ -73,6 +94,7 @@ function differs(a: Activity | null, b: Activity | null): boolean {
   if (!a || !b) return a !== b
   if (a.details !== b.details || a.state !== b.state || a.largeImageKey !== b.largeImageKey) return true
   if (a.largeImageText !== b.largeImageText) return true
+  if (a.buttons?.[0]?.url !== b.buttons?.[0]?.url) return true
   const off = (x?: number, y?: number) =>
     x === undefined || y === undefined ? x !== y : Math.abs(x - y) > SEEK_TOLERANCE_MS
   return off(a.startTimestamp, b.startTimestamp) || off(a.endTimestamp, b.endTimestamp)
