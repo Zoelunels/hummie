@@ -119,7 +119,7 @@ describe('Presence', () => {
 })
 
 describe('toActivity settings', () => {
-  const on = { showArt: true, showProgress: true, hideDetails: false, showLyrics: false, lyricsLeadSec: 1 }
+  const on = { showArt: true, showProgress: true, hideDetails: false, showLyrics: false, lyricsLeadSec: 1, showButton: true }
   it('hides title and artist when hideDetails', () => {
     const a = toActivity(playing({ artworkUrl: 'https://x/a.jpg', album: 'Alb' }), 0, { ...on, hideDetails: true })!
     expect(a.details).toBe('Listening to music')
@@ -136,7 +136,7 @@ describe('toActivity settings', () => {
 })
 
 describe('Presence settings', () => {
-  const S = { shareToDiscord: true, showArt: true, showProgress: true, clearWhenPaused: true, hideDetails: false, showLyrics: false, lyricsLeadSec: 1 }
+  const S = { shareToDiscord: true, showArt: true, showProgress: true, clearWhenPaused: true, hideDetails: false, showLyrics: false, lyricsLeadSec: 1, showButton: true }
   let clients: Fake[]
   let p: Presence
   beforeEach(() => {
@@ -190,7 +190,7 @@ describe('lyric line', () => {
 })
 
 describe('Presence lyric updates', () => {
-  const S = { shareToDiscord: true, showArt: true, showProgress: true, clearWhenPaused: true, hideDetails: false, showLyrics: true, lyricsLeadSec: 1 }
+  const S = { shareToDiscord: true, showArt: true, showProgress: true, clearWhenPaused: true, hideDetails: false, showLyrics: true, lyricsLeadSec: 1, showButton: true }
   let clients: Fake[]
   let p: Presence
   beforeEach(() => {
@@ -247,5 +247,9 @@ describe('song button', () => {
     expect(toActivity(playing(), 0, on)!.buttons).toBeUndefined()
     const hidden = toActivity(withUrl('https://music.youtube.com/watch?v=abc123XYZ'), 0, { ...on, hideDetails: true })!
     expect(hidden.buttons).toBeUndefined()
+  })
+  it('can be switched off with the setting', () => {
+    const a = toActivity(withUrl('https://music.youtube.com/watch?v=abc123XYZ'), 0, { ...on, showButton: false })!
+    expect(a.buttons).toBeUndefined()
   })
 })

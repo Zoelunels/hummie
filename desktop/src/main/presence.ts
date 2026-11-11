@@ -23,6 +23,8 @@ export interface Activity {
 }
 
 type ActivityOptions = Pick<Settings, 'showArt' | 'showProgress' | 'hideDetails'> & {
+  /** Show the song link button (default on). */
+  showButton?: boolean
   /** Current lyric line; replaces the artist line while playing. Ignored when details are hidden. */
   lyric?: string | null
 }
@@ -75,7 +77,7 @@ export function toActivity(
     instance: false
   } as const
   // The link reveals the song, so it follows "hide title / artist".
-  const link = hide ? undefined : songLink(m.url)
+  const link = hide || opts.showButton === false ? undefined : songLink(m.url)
   const buttons = link ? [{ label: 'Listen on YouTube Music', url: link }] : undefined
   const artist = hide ? undefined : (m.artist ?? 'Unknown artist')
   if (paused) {

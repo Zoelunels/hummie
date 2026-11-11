@@ -160,7 +160,8 @@ function Player({ state, onControl }: { state: AppState; onControl: (c: Command)
       ? `Paused / ${m.artist ?? ''}`
       : (m.artist ?? '')
     : 'Press play on YouTube Music'
-  const size = title.length > 26 ? 22 : title.length > 16 ? 30 : 40
+  const cover = m?.artworkUrl
+  const size = Math.min(title.length > 26 ? 22 : title.length > 16 ? 30 : 40, cover ? 28 : 40)
 
   return (
     <>
@@ -170,8 +171,13 @@ function Player({ state, onControl }: { state: AppState; onControl: (c: Command)
       <section className="slab" aria-label="Now playing">
         <span className={`sticker ${mode}`}>● {STICKER[mode]}</span>
         <p className="lab">01 / now playing</p>
-        <h2 className="song" style={{ fontSize: size }}>{title}</h2>
-        <p className="artist">{artist}</p>
+        <div className="nowrow">
+          {cover && <img className="cover" src={cover} alt="" referrerPolicy="no-referrer" />}
+          <div className="nowtext">
+            <h2 className="song" style={{ fontSize: size }}>{title}</h2>
+            <p className="artist">{artist}</p>
+          </div>
+        </div>
         <div
           className="segs"
           role="progressbar"
@@ -266,6 +272,7 @@ function SettingsView({ helper, state }: { helper: Helper; state: AppState }) {
         {pair('showProgress', 'Progress bar')}
         {pair('clearWhenPaused', 'Clear after 5m pause')}
         {pair('hideDetails', 'Hide title / artist')}
+        {pair('showButton', 'Discord link button')}
       </section>
 
       <section className="slab" aria-label="Lyrics">
